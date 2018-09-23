@@ -21,6 +21,13 @@ class Main {
 	private static final String SUPPORT_CALL_FILE_NAME = "support_calls.json";
 
 	public static void main(String[] args) {
+		setupRestApi();
+		// readResponderResource(); // local resources file with copy of responder example data
+		readKafkaData();
+		//InputStream support_calls = getResourceAsStream(SUPPORT_CALL_FILE_NAME);
+	}
+
+	public static void setupRestApi() {
 		port(8080);
 		get("/hello", (req, res) -> "Hello World"); // http://localhost:8080/hello
 		get("/hello/:name", (req, res) -> String.format("Hello, %s!", req.params(":name")));
@@ -31,14 +38,7 @@ class Main {
 			}
 			return sb.toString();
 		});
-		// readResponderResource()
-		readKafkaData();
-		//InputStream support_calls = getResourceAsStream(SUPPORT_CALL_FILE_NAME);
 	}
-
-	public static InputStream getResourceAsStream(String filename) {
-		return Main.class.getClassLoader().getResourceAsStream(filename);
-	}  
 
 	public static void readKafkaData() {
 		Properties props = new Properties();
@@ -67,7 +67,7 @@ class Main {
  						break;
 		 		}
 
-		 		System.out.println(2);
+		 		//System.out.println(2);
 		    	System.out.printf("offset = %d, topic = %s, key = %s, value = %s%n", 
 		    		record.offset(), record.topic(), record.key(), record.value());
 		 	}
@@ -81,4 +81,8 @@ class Main {
 			System.out.println(gson.toJson(r));
 		}
 	}
+
+	public static InputStream getResourceAsStream(String filename) {
+		return Main.class.getClassLoader().getResourceAsStream(filename);
+	} 
 }
