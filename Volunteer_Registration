@@ -1,0 +1,58 @@
+import java.sql.*;
+import java.util.*;
+
+// Example calls:
+// Volunteer_Registration volunteer = new Volunteer_Registration("John Smith", ["CPR", "Police"],
+//                                        "password", "johnsmith@gmail.com",
+//                                        "New Orleans", "206-xxx-xxxxx");
+// volunteer.saveToDatabase();
+
+public class Volunteer_Registration {
+	private String first_name;
+	private String last_name;
+	private String[] skills;
+	private String password;
+	private String email;
+	private String location;
+	private String phone_number;
+
+	public Volunteer_Registration(String name, String[] skills, String password,
+			String email, String location, String phone_number) {
+		String[] partsOfName = name.split(" ");
+		first_name = partsOfName[partsOfName.length - 1];
+		last_name = partsOfName[0];
+		this.skills = skills;
+		this.password = password;
+		this.email = email;
+		this.location = location;
+		this.phone_number = phone_number;
+	}
+
+	public void saveToDatabase() {
+		try {
+			String host = "jdbc:derby://localhost:1527/Employees";
+			String uName = "autoBob";
+			String uPass= "password";
+			Connection conn = DriverManager.getConnection(host, uName, uPass);
+
+			Calendar calendar = Calendar.getInstance();
+			java.sql.Date entry_date = new java.sql.Date(calendar.getTime().getTime());
+			String query = " insert into users (last_name, first_name, entry_date,"
+					+ "skills, email, location, phone_number)"
+					+ " values (?, ?, ?, ?, ?, ?, ?)";
+			PreparedStatement preparedStmt = conn.prepareStatement(query);
+			preparedStmt.setString (1, last_name);
+			preparedStmt.setString (2, first_name);
+			preparedStmt.setDate   (3, entry_date);
+			preparedStmt.setString (4, Arrays.toString(skills));
+			preparedStmt.setString (5, email);
+			preparedStmt.setString (6, location);
+			preparedStmt.setString (7, phone_number);
+			
+			// execute the preparedstatement
+			preparedStmt.execute();
+		} catch (SQLException err) {
+			System.out.println(err.getMessage( ));
+		}
+	}
+}
