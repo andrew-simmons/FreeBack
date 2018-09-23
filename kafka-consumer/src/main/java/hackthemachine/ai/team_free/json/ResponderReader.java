@@ -14,10 +14,20 @@ import com.google.gson.JsonParser;
 
 public class ResponderReader {
 	public static Collection<Responder> read(InputStream is) {
-		Map<Long, Responder> responders = new TreeMap<>();
-
 		JsonParser parser = new JsonParser();
 		JsonElement element = parser.parse(new InputStreamReader(is));
+		return parse(element);
+	}
+
+	public static Collection<Responder> read(String str) {
+		JsonParser parser = new JsonParser();
+		JsonElement element = parser.parse(str);
+		return parse(element);
+	}
+
+	public static Collection<Responder> parse(JsonElement element) {
+		Map<Long, Responder> responders = new TreeMap<>();
+
 		if (element.isJsonObject()) {
 			JsonObject root = element.getAsJsonObject();
 			parseJson(root.get("evidence_id").getAsJsonObject(), responders, (r, e) -> r.evidenceId = UUID.fromString(e.getAsString()));

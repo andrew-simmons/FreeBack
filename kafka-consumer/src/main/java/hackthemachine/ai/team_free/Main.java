@@ -12,18 +12,27 @@ import java.util.Collection;
 import com.google.gson.Gson;
 import java.io.InputStream;
 
+import static spark.Spark.*;
+
+
 class Main {
 
 	private static final String RESPONDER_FILE_NAME = "responder_locations.json";
 	private static final String SUPPORT_CALL_FILE_NAME = "support_calls.json";
 
 	public static void main(String[] args) {
-		// readKafkaData();
-		Collection<Responder> responders = ResponderReader.read(getResourceAsStream(RESPONDER_FILE_NAME));
-		Gson gson = new Gson();
-		for (Responder r : responders) {
-			System.out.println(gson.toJson(r));
-		}
+		port(8080);
+		get("/hello", (req, res) -> "Hello World"); // http://localhost:8080/hello
+		get("/hello/:name", (req, res) -> String.format("Hello, %s!", req.params(":name")));
+		post("/assist", (req, res) -> {
+			final StringBuilder sb = new StringBuilder("Assistance Request: Receieved\n");
+			for (String p : req.queryParams()) {
+				sb.append(p).append(": ").append(req.queryParams(p)).append("\n");
+			}
+			return sb.toString();
+		});
+		// readResponderResource()
+		readKafkaData();
 		//InputStream support_calls = getResourceAsStream(SUPPORT_CALL_FILE_NAME);
 	}
 
@@ -46,10 +55,30 @@ class Main {
 			System.out.println(1);
 			ConsumerRecords<String, String> records = consumer.poll(100);
 		 	for (ConsumerRecord<String, String> record : records) {
+		 		switch (record.topic()) {
+		 			case "responder_locations":
+		 				Collection<Responder> responders = ResponderReader.read(record.value());
+		 				// TODO: do something with the parsed data
+		 				break;
+	 				case "support_calls":
+	 					// TODO: parse 
+	 					break;
+ 					default:
+ 						break;
+		 		}
+
 		 		System.out.println(2);
 		    	System.out.printf("offset = %d, topic = %s, key = %s, value = %s%n", 
 		    		record.offset(), record.topic(), record.key(), record.value());
 		 	}
+		}
+	}
+
+	protected static void readResponderResource() {
+		Collection<Responder> responders = ResponderReader.read(getResourceAsStream(RESPONDER_FILE_NAME));
+		Gson gson = new Gson();
+		for (Responder r : responders) {
+			System.out.println(gson.toJson(r));
 		}
 	}
 }
